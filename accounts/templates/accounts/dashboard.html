@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Candidate Dashboard - DevHire{% endblock %}
+
+{% block content %}
+    <section class="hero-card">
+        <h2>Candidate Dashboard</h2>
+        <p>Welcome back, <strong>{{ user.username }}</strong>! Track the progress and real-time review status of your engineering applications below.</p>
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 15px;">
+            <span class="tag-pill" style="background: rgba(255,255,255,0.15); color: white; border: none;">✉️ {{ user.email }}</span>
+            <a href="/jobs/" class="btn btn-sm" style="background: #34d399; color: var(--slate-950);">+ Browse More Jobs</a>
+        </div>
+    </section>
+
+    <h2 class="section-title">
+        📋 My Submitted Applications
+        <span class="count-badge">{{ applications|length }}</span>
+    </h2>
+
+    {% if applications %}
+        <div>
+            {% for app in applications %}
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <h3 class="job-card-title">{{ app.job.title }}</h3>
+                            <div class="job-card-company">🏢 {{ app.job.company }} · 📍 {{ app.job.location }}</div>
+                        </div>
+                        <div>
+                            {% if app.status == "Shortlisted" %}
+                                <span class="status-badge status-Shortlisted">🟢 Shortlisted</span>
+                            {% elif app.status == "Selected" or app.status == "Offer Accepted" %}
+                                <span class="status-badge status-Selected">🎉 Selected</span>
+                            {% elif app.status == "Rejected" %}
+                                <span class="status-badge status-Rejected">🔴 Rejected</span>
+                            {% elif app.status == "Under Review" %}
+                                <span class="status-badge status-Under-Review">🔵 Under Review</span>
+                            {% else %}
+                                <span class="status-badge status-Pending">🟡 Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="job-tags-row">
+                        <span class="tag-pill">🆔 Application #{{ app.id }}</span>
+                        <span class="tag-pill">📅 Applied: {{ app.applied_at|date:"d M Y, h:i A" }}</span>
+                        <span class="tag-pill tag-salary">💰 {{ app.job.salary }}</span>
+                    </div>
+
+                    {% if app.status == "Shortlisted" %}
+                        <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 14px 18px; border-radius: var(--radius-sm); margin: 14px 0; font-size: 14px; color: #065f46;">
+                            🎉 <strong>Great news!</strong> Your profile has been shortlisted. The recruitment team at {{ app.job.company }} will reach out with interview details.
+                        </div>
+
+                    {% elif app.status == "Selected" or app.status == "Offer Accepted" %}
+                        <!-- Post-Selection Offer & Interactive Roadmap Hub -->
+                        <div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1px solid #a7f3d0; border-radius: var(--radius-md); padding: 26px; margin: 20px 0; box-shadow: var(--shadow-sm);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <h4 style="font-size: 20px; font-weight: 800; color: #065f46; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        🏆 Official Job Offer Released!
+                                    </h4>
+                                    <p style="font-size: 14px; color: #047857;">
+                                        Congratulations, <strong>{{ app.name }}</strong>! <strong>{{ app.job.company }}</strong> has selected you for the role of <strong>{{ app.job.title }}</strong>.
+                                    </p>
+                                </div>
+                                <div id="offer-status-badge-{{ app.id }}">
+                                    <span class="status-badge" style="background: #059669; color: white;">📄 Official Letter Available</span>
+                                </div>
+                            </div>
+
+                            <!-- Offer Details Summary Grid -->
+                            <div style="background: white; border: 1px solid #d1fae5; border-radius: var(--radius-sm); padding: 18px; margin-bottom: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; font-size: 13px;">
+                                <div>
+                                    <span style="color: var(--slate-500); display: block;">Designation</span>
+                                    <strong style="color: var(--slate-900); font-size: 14px;">{{ app.job.title }}</strong>
+                                </div>
+                                <div>
+                                    <span style="color: var(--slate-500); display: block;">Annual Package (CTC)</span>
+                                    <strong style="color: #059669; font-size: 14px;">{{ app.job.salary }}</strong>
+                                </div>
+                                <div>
+                                    <span style="color: var(--slate-500); display: block;">Workplace Model</span>
+                                    <strong style="color: var(--slate-900); font-size: 14px;">{{ app.job.location }}</strong>
+                                </div>
+                                <div>
+                                    <span style="color: var(--slate-500); display: block;">Tentative Joining Date</span>
+                                    <strong style="color: var(--slate-900); font-size: 14px;">1st of Next Month</strong>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div id="offer-actions-{{ app.id }}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 22px;">
+                                <button type="button" onclick="openOfferModal('{{ app.id }}')" class="btn" style="background: #0f172a; padding: 10px 20px;">
+                                    🔍 Preview & Download Offer Letter (PDF)
+                                </button>
+                                <button type="button" onclick="handleOfferResponse('{{ app.id }}', 'accepted')" class="btn" style="background: #059669; padding: 10px 20px;">
+                                    ✅ Accept Offer
+                                </button>
+                                <button type="button" onclick="handleOfferResponse('{{ app.id }}', 'declined')" class="btn btn-secondary" style="padding: 10px 16px; color: #dc2626; border-color: #fca5a5;">
+                                    Decline
+                                </button>
+                            </div>
+
+                            <div id="offer-response-message-{{ app.id }}" style="display: none; padding: 14px 18px; border-radius: var(--radius-sm); font-size: 14px; margin-bottom: 20px;"></div>
+
+                            <!-- Interactive Roadmap with Progress Bar & Ticking -->
+                            <div style="background: white; border: 1px solid #d1fae5; border-radius: var(--radius-sm); padding: 20px; margin-bottom: 18px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                    <h5 style="font-size: 15px; font-weight: 800; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        🧭 Interactive Onboarding Roadmap
+                                    </h5>
+                                    <span id="progress-percent-label-{{ app.id }}" style="font-size: 13px; font-weight: 700; color: #059669;">
+                                        33% Completed
+                                    </span>
+                                </div>
+
+                                <div class="roadmap-progress-wrap">
+                                    <div class="roadmap-progress-bar-bg">
+                                        <div id="progress-bar-fill-{{ app.id }}" class="roadmap-progress-bar-fill" style="width: 33%;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--slate-500); margin-top: 5px;">
+                                        <span id="progress-count-label-{{ app.id }}">2 of 6 milestones achieved</span>
+                                        <span id="all-done-badge-{{ app.id }}" style="display: none; color: #166534; font-weight: 700;">🎉 All Onboarding Clearance Complete!</span>
+                                    </div>
+                                </div>
+
+                                <div id="roadmap-list-{{ app.id }}" style="margin-top: 14px;">
+                                    <label class="roadmap-item completed">
+                                        <input type="checkbox" checked disabled>
+                                        <span class="task-text">1. Initial Technical Evaluation & Recruiter Interviews <strong>(Completed)</strong></span>
+                                    </label>
+                                    
+                                    <label class="roadmap-item completed">
+                                        <input type="checkbox" checked disabled>
+                                        <span class="task-text">2. Formal Offer Letter Drafted & Extended <strong>(Completed)</strong></span>
+                                    </label>
+
+                                    <label class="roadmap-item" id="item-{{ app.id }}-0">
+                                        <input type="checkbox" class="interactive-tick-{{ app.id }}" onchange="toggleRoadmapItem('{{ app.id }}', 0)">
+                                        <span class="task-text">3. Confirm Digital Offer Acceptance</span>
+                                    </label>
+
+                                    <label class="roadmap-item" id="item-{{ app.id }}-1">
+                                        <input type="checkbox" class="interactive-tick-{{ app.id }}" onchange="toggleRoadmapItem('{{ app.id }}', 1)">
+                                        <span class="task-text">4. Upload Government ID & Tax Verification (PAN / Aadhaar / Passport)</span>
+                                    </label>
+
+                                    <label class="roadmap-item" id="item-{{ app.id }}-2">
+                                        <input type="checkbox" class="interactive-tick-{{ app.id }}" onchange="toggleRoadmapItem('{{ app.id }}', 2)">
+                                        <span class="task-text">5. Submit Academic Degree & Relieving Certificates</span>
+                                    </label>
+
+                                    <label class="roadmap-item" id="item-{{ app.id }}-3">
+                                        <input type="checkbox" class="interactive-tick-{{ app.id }}" onchange="toggleRoadmapItem('{{ app.id }}', 3)">
+                                        <span class="task-text">6. Confirm Shipping Address for Developer Workstation & Welcome Kit</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Dedicated HR Coordinator Info -->
+                            <div style="background: rgba(16, 185, 129, 0.08); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 13px; color: #065f46; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <strong>👤 Dedicated Onboarding Coordinator:</strong> Elena Rostova (People & Talent)
+                                </div>
+                                <div>
+                                    ✉️ <a href="mailto:onboarding@{{ app.job.company|slugify }}.io" style="color: #059669; font-weight: 700; text-decoration: underline;">onboarding@{{ app.job.company|slugify }}.io</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formal Offer Letter Modal (Printable as Clean PDF) -->
+                        <div id="offer-modal-{{ app.id }}" class="offer-modal-overlay">
+                            <div class="offer-modal-container">
+                                <div class="offer-modal-header-bar no-print">
+                                    <div style="font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                        📄 Official Employment Offer Document
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button type="button" onclick="printOfferLetter('offer-doc-{{ app.id }}')" class="btn btn-sm" style="background: #10b981; color: #020617; font-weight: 700;">
+                                            📥 Download / Print PDF
+                                        </button>
+                                        <button type="button" onclick="closeOfferModal('{{ app.id }}')" class="btn btn-sm btn-secondary" style="color: white; background: rgba(255,255,255,0.15); border: none;">
+                                            ✕ Close
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- The Actual Formal Document -->
+                                <div id="offer-doc-{{ app.id }}" class="offer-letter-paper">
+                                    <div class="letterhead-top">
+                                        <div>
+                                            <div class="letterhead-logo">
+                                                {{ app.job.company }} <span>.</span>
+                                            </div>
+                                            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                                                Global Talent & Engineering Operations · Human Resources Division
+                                            </div>
+                                        </div>
+                                        <div class="letterhead-meta">
+                                            <div><strong>Ref:</strong> DH-OFFER-2026-{{ app.id }}09</div>
+                                            <div><strong>Date:</strong> {% now "F d, Y" %}</div>
+                                            <div><strong>Confidential</strong></div>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-bottom: 20px;">
+                                        <strong>To:</strong><br>
+                                        <span style="font-size: 16px; font-weight: 700; color: #0f172a;">{{ app.name }}</span><br>
+                                        Email: {{ app.email }}<br>
+                                        Phone: {{ app.phone }}
+                                    </div>
+
+                                    <div class="letter-title">
+                                        Formal Letter of Employment Offer
+                                    </div>
+
+                                    <p>Dear <strong>{{ app.name }}</strong>,</p>
+
+                                    <p>On behalf of <strong>{{ app.job.company }}</strong>, we are pleased to extend this formal offer of employment for the position of <strong>{{ app.job.title }}</strong>. We were immensely impressed with your qualifications, problem-solving skills, and domain experience during our evaluation process.</p>
+
+                                    <p>The key terms and conditions of your employment offer are outlined in the schedule below:</p>
+
+                                    <table class="letter-table">
+                                        <tr>
+                                            <th>Position / Designation</th>
+                                            <td><strong>{{ app.job.title }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Department</th>
+                                            <td>Software Engineering & Platform Development</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Annual CTC / Compensation</th>
+                                            <td><strong style="color: #059669; font-size: 14px;">{{ app.job.salary }}</strong> (Subject to statutory taxes & deductions)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Workplace Location</th>
+                                            <td>{{ app.job.location }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tentative Joining Date</th>
+                                            <td>1st of Next Month (or mutually agreed start date)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Benefits & Perks</th>
+                                            <td>Comprehensive Medical Insurance, Home Office Equipment Stipend, 24 Days Paid Annual Leave, Performance Bonus</td>
+                                        </tr>
+                                    </table>
+
+                                    <p>Please signify your acceptance of this offer by signing below and completing your onboarding documentation through the DevHire portal.</p>
+
+                                    <p>We look forward to welcoming you to the {{ app.job.company }} family and achieving great milestones together!</p>
+
+                                    <div class="letter-signature-grid">
+                                        <div>
+                                            <div style="font-style: italic; color: #059669; font-family: cursive; font-size: 18px;">
+                                                Elena Rostova
+                                            </div>
+                                            <div class="sig-line">
+                                                Elena Rostova<br>
+                                                <span style="color: #64748b; font-weight: normal;">Head of People Operations<br>{{ app.job.company }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div id="candidate-sig-placeholder-{{ app.id }}" style="font-style: italic; color: #1e293b; font-family: cursive; font-size: 18px;">
+                                                Pending Acceptance
+                                            </div>
+                                            <div class="sig-line">
+                                                {{ app.name }}<br>
+                                                <span style="color: #64748b; font-weight: normal;">Candidate Signature & Acceptance</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% elif app.status == "Under Review" %}
+                        <div style="background-color: #f0f9ff; border-left: 4px solid #0284c7; padding: 14px 18px; border-radius: var(--radius-sm); margin: 14px 0; font-size: 14px; color: #0369a1;">
+                            ℹ️ Your application is currently actively being reviewed by the hiring manager.
+                        </div>
+                    {% endif %}
+
+                    {% if app.resume %}
+                        <div style="margin-top: 10px; font-size: 14px;">
+                            <strong>Attached Resume:</strong> 
+                            <a href="{{ app.resume.url }}" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">View Uploaded File</a>
+                        </div>
+                    {% endif %}
+
+                    {% if app.cover_letter %}
+                        <div style="margin-top: 8px; font-size: 14px; color: var(--slate-600); background: var(--slate-100); padding: 10px 14px; border-radius: var(--radius-sm);">
+                            <strong>Cover Note:</strong> "{{ app.cover_letter }}"
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="job-card" style="text-align: center; padding: 48px 20px;">
+            <h3>No Applications Yet</h3>
+            <p style="color: var(--slate-500); margin: 10px 0 20px;">You haven't applied to any job postings yet.</p>
+            <a href="/jobs/" class="btn">Explore Job Listings &rarr;</a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Open and Close the Formal Offer Letter Modal
+function openOfferModal(appId) {
+    const modal = document.getElementById('offer-modal-' + appId);
+    if (modal) modal.classList.add('active');
+}
+
+function closeOfferModal(appId) {
+    const modal = document.getElementById('offer-modal-' + appId);
+    if (modal) modal.classList.remove('active');
+}
+
+// Print ONLY the pristine letterhead document (clean A4 PDF format)
+function printOfferLetter(docId) {
+    const docElement = document.getElementById(docId);
+    if (!docElement) return;
+
+    const printWindow = window.open('', '_blank', 'width=850,height=900');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Employment Offer Letter</title>
+            <link rel="stylesheet" href="/static/accounts/style.css">
+            <style>
+                body { background: white; margin: 0; padding: 25mm 20mm; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+                .offer-letter-paper { box-shadow: none !important; padding: 0 !important; width: 100% !important; }
+            </style>
+        </head>
+        <body>
+            ${docElement.outerHTML}
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() { window.close(); }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// Handle Offer Acceptance / Decline
+function handleOfferResponse(appId, decision) {
+    const actions = document.getElementById('offer-actions-' + appId);
+    const badge = document.getElementById('offer-status-badge-' + appId);
+    const msg = document.getElementById('offer-response-message-' + appId);
+    const sigPlaceholder = document.getElementById('candidate-sig-placeholder-' + appId);
+    const firstCheckbox = document.querySelector(`.interactive-tick-${appId}`);
+
+    // Send asynchronous update to backend to notify Recruiter and update Recruiter Hub
+    fetch('/apply/application/' + appId + '/offer-response/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: 'decision=' + encodeURIComponent(decision)
+    }).then(res => res.json()).then(data => {
+        console.log('Offer decision synced with Recruiter Hub:', data);
+    }).catch(err => console.error(err));
+
+    if (decision === 'accepted') {
+        badge.innerHTML = '<span class="status-badge" style="background: #15803d; color: white;">🎉 Offer Accepted!</span>';
+        msg.style.display = 'block';
+        msg.style.backgroundColor = '#dcfce7';
+        msg.style.border = '1px solid #86efac';
+        msg.style.color = '#166534';
+        msg.innerHTML = '<strong>🎉 Offer Accepted!</strong> Your acceptance has been registered with HR. Proceed through the onboarding roadmap below to complete verification!';
+        
+        if (sigPlaceholder) {
+            sigPlaceholder.innerHTML = 'Digitally Signed & Accepted ✅';
+            sigPlaceholder.style.color = '#059669';
+        }
+
+        // Tick milestone 3 automatically
+        if (firstCheckbox && !firstCheckbox.checked) {
+            firstCheckbox.checked = true;
+            toggleRoadmapItem(appId, 0);
+        }
+
+        actions.innerHTML = `
+            <button type="button" onclick="openOfferModal('${appId}')" class="btn" style="background: #0f172a; padding: 10px 20px;">
+                🔍 View Signed Offer Letter (PDF)
+            </button>
+            <span style="color: #15803d; font-weight: 700; font-size: 14px;">✅ Accepted</span>
+        `;
+    } else {
+        badge.innerHTML = '<span class="status-badge" style="background: #fee2e2; color: #991b1b;">Offer Declined</span>';
+        msg.style.display = 'block';
+        msg.style.backgroundColor = '#fee2e2';
+        msg.style.border = '1px solid #fca5a5';
+        msg.style.color = '#991b1b';
+        msg.innerHTML = 'You have declined this offer. The employer has been notified.';
+        actions.style.display = 'none';
+    }
+}
+
+// Interactive Roadmap Ticking & Progress Calculation
+function toggleRoadmapItem(appId, index) {
+    const checkboxes = document.querySelectorAll(`.interactive-tick-${appId}`);
+    const completedCountBase = 2; // Milestones 1 & 2 are pre-completed
+    let interactiveChecked = 0;
+
+    checkboxes.forEach((cb, i) => {
+        const itemWrap = document.getElementById(`item-${appId}-${i}`);
+        if (cb.checked) {
+            interactiveChecked++;
+            if (itemWrap) itemWrap.classList.add('completed');
+        } else {
+            if (itemWrap) itemWrap.classList.remove('completed');
+        }
+    });
+
+    const total = 6;
+    const currentCompleted = completedCountBase + interactiveChecked;
+    const percentage = Math.round((currentCompleted / total) * 100);
+
+    const progressBar = document.getElementById(`progress-bar-fill-${appId}`);
+    const percentLabel = document.getElementById(`progress-percent-label-${appId}`);
+    const countLabel = document.getElementById(`progress-count-label-${appId}`);
+    const allDoneBadge = document.getElementById(`all-done-badge-${appId}`);
+
+    if (progressBar) progressBar.style.width = percentage + '%';
+    if (percentLabel) percentLabel.textContent = percentage + '% Completed';
+    if (countLabel) countLabel.textContent = `${currentCompleted} of ${total} milestones achieved`;
+
+    if (allDoneBadge) {
+        if (currentCompleted === total) {
+            allDoneBadge.style.display = 'inline';
+            percentLabel.textContent = '100% Completed 🏆';
+        } else {
+            allDoneBadge.style.display = 'none';
+        }
+    }
+
+    // Persist progress to localStorage
+    const savedState = Array.from(checkboxes).map(c => c.checked);
+    localStorage.setItem(`devhire_roadmap_${appId}`, JSON.stringify(savedState));
+}
+
+// Restore saved roadmap state from localStorage on load
+document.addEventListener('DOMContentLoaded', () => {
+    const selectedApps = document.querySelectorAll('[id^="roadmap-list-"]');
+    selectedApps.forEach(list => {
+        const appId = list.id.replace('roadmap-list-', '');
+        const saved = localStorage.getItem(`devhire_roadmap_${appId}`);
+        if (saved) {
+            try {
+                const states = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll(`.interactive-tick-${appId}`);
+                checkboxes.forEach((cb, i) => {
+                    if (states[i]) {
+                        cb.checked = true;
+                    }
+                });
+                toggleRoadmapItem(appId, -1);
+            } catch (e) {}
+        }
+    });
+});
+</script>
+{% endblock %}

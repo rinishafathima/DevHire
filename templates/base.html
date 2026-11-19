@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DevHire - Modern Tech Career Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="app-header">
+        <div class="nav-container">
+            <a href="/" class="brand-logo">
+                <div class="brand-badge">DH</div>
+                <span>Dev<span class="highlight">Hire</span></span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="/">Home</a>
+                <a href="/jobs/">Explore Jobs</a>
+
+                {% if user.is_authenticated %}
+                    {% if user.recruiterprofile %}
+                        <a href="/recruiter-dashboard/">Recruiter Hub</a>
+                        <a href="/jobs/add/" class="btn-cta">+ Post Job</a>
+                    {% else %}
+                        <a href="/dashboard/">My Dashboard</a>
+                    {% endif %}
+                    <a href="/logout/" class="btn-logout" id="nav-logout-link">Logout</a>
+                {% else %}
+                    <a href="/login/">Sign In</a>
+                    <a href="/register/" class="btn-cta">Get Started</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="page-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Confirmation Modal for Logout -->
+    <div id="logout-modal-overlay" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+        <div class="logout-modal-box">
+            <div class="logout-modal-icon">🚪</div>
+            <h3 id="logout-title">Sign Out of DevHire?</h3>
+            <p>Are you sure you want to log out of your session? You can sign back in at any time.</p>
+            <div class="logout-modal-actions">
+                <button id="logout-cancel-btn" type="button" class="btn-cancel">Cancel</button>
+                <a id="logout-confirm-btn" href="/logout/" class="btn-confirm">Yes, Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with Rinisha's Branding -->
+    <footer class="app-footer">
+        <p>
+            <strong>DevHire</strong> — Full-Stack Python & Django Platform · 
+            Built with ❤️ by <a href="https://github.com/rinishafathima" target="_blank" rel="noopener noreferrer">Rinisha Fathima T H</a>
+        </p>
+        <p style="margin-top: 6px; color: var(--slate-500); font-size: 12px;">
+            <a href="/api/jobs/" target="_blank">REST API</a> · 
+            <a href="https://github.com/rinishafathima" target="_blank" rel="noopener noreferrer">GitHub Profile</a> · 
+            © 2026 DevHire. All rights reserved.
+        </p>
+    </footer>
+
+    <script src="{% static 'accounts/main.js' %}?v=2"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

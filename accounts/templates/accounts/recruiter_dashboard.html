@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Hub - DevHire{% endblock %}
+
+{% block content %}
+    <section class="hero-card">
+        <h2>Recruiter Talent Hub</h2>
+        {% if recruiter_profile %}
+            <p>Hiring Portal for <strong>{{ recruiter_profile.company_name }}</strong> · Recruiter: <strong>{{ user.username }}</strong></p>
+        {% else %}
+            <p>Welcome, <strong>{{ user.username }}</strong></p>
+        {% endif %}
+        <div style="margin-top: 18px;">
+            <a href="/jobs/add/" class="btn" style="background: #34d399; color: var(--slate-950);">
+                + Post a New Job Opening
+            </a>
+        </div>
+    </section>
+
+    <!-- Real-time Candidate Offer Decisions Alerts on Recruiter Hub -->
+    {% if accepted_offers %}
+        <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 20px;">🎉</span>
+                <h3 style="color: #065f46; font-size: 17px; font-weight: 800; margin: 0;">
+                    Offer Acceptance Notice ({{ accepted_offers|length }})
+                </h3>
+            </div>
+            <p style="color: #047857; font-size: 14px; margin-bottom: 12px;">
+                The following candidate(s) have reviewed and <strong>accepted</strong> their formal employment offer:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                {% for offer in accepted_offers %}
+                    <div style="background: white; border: 1px solid #a7f3d0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <strong style="color: var(--slate-900);">{{ offer.name }}</strong> has accepted the offer for <strong style="color: #059669;">{{ offer.job.title }}</strong>!
+                            <div style="font-size: 12px; color: var(--slate-500); margin-top: 2px;">
+                                ✉️ {{ offer.email }} · 📞 {{ offer.phone }}
+                            </div>
+                        </div>
+                        <span class="status-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700;">
+                            ✅ Ready for Onboarding
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if declined_offers %}
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 24px;">
+            <h4 style="color: #9f1239; font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">
+                Notice: Candidate Declined Offer ({{ declined_offers|length }})
+            </h4>
+            {% for offer in declined_offers %}
+                <p style="color: #881337; font-size: 13px; margin: 2px 0;">
+                    • <strong>{{ offer.name }}</strong> declined the offer for <strong>{{ offer.job.title }}</strong>. You may consider reviewing other shortlisted candidates below.
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- My Posted Jobs -->
+    <h2 class="section-title">
+        💼 Active Job Postings
+        <span class="count-badge">{{ jobs|length }}</span>
+    </h2>
+
+    {% if jobs %}
+        <div>
+            {% for job in jobs %}
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <h3 class="job-card-title">{{ job.title }}</h3>
+                            <div class="job-card-company">🏢 {{ job.company }} · 📍 {{ job.location }}</div>
+                        </div>
+                        <a href="/jobs/details/{{ job.id }}/" class="btn btn-secondary btn-sm">Public View &rarr;</a>
+                    </div>
+                    <div class="job-tags-row">
+                        <span class="tag-pill tag-salary">💰 {{ job.salary }}</span>
+                        <span class="tag-pill">⏱️ {{ job.experience }}</span>
+                        <span class="tag-pill tag-skills">⚡ {{ job.skills }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="job-card" style="text-align: center; padding: 36px 20px;">
+            <h3>No Jobs Posted Yet</h3>
+            <p style="color: var(--slate-500); margin: 8px 0 18px;">Create your first opening to start receiving candidates!</p>
+            <a href="/jobs/add/" class="btn">+ Post a Vacancy</a>
+        </div>
+    {% endif %}
+
+    <!-- Candidate Applications Received -->
+    <h2 class="section-title" style="margin-top: 40px;">
+        👥 Candidate Applications
+        <span class="count-badge">{{ applications|length }}</span>
+    </h2>
+
+    {% if applications %}
+        <div>
+            {% for app in applications %}
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <h3 class="job-card-title">{{ app.name }}</h3>
+                            <div style="color: var(--slate-600); font-size: 14px; margin-top: 2px;">
+                                Applied for: <strong style="color: var(--slate-900);">{{ app.job.title }}</strong>
+                            </div>
+                        </div>
+                        <div>
+                            {% if app.status == "Offer Accepted" %}
+                                <span class="status-badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 800;">
+                                    🎉 Offer Accepted
+                                </span>
+                            {% elif app.status == "Offer Declined" %}
+                                <span class="status-badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+                                    ❌ Offer Declined
+                                </span>
+                            {% elif app.status == "Shortlisted" %}
+                                <span class="status-badge status-Shortlisted">🟢 Shortlisted</span>
+                            {% elif app.status == "Selected" %}
+                                <span class="status-badge status-Selected">🏆 Selected (Pending Acceptance)</span>
+                            {% elif app.status == "Rejected" %}
+                                <span class="status-badge status-Rejected">🔴 Rejected</span>
+                            {% elif app.status == "Under Review" %}
+                                <span class="status-badge status-Under-Review">🔵 Under Review</span>
+                            {% else %}
+                                <span class="status-badge status-Pending">🟡 Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="job-tags-row">
+                        <span class="tag-pill">✉️ {{ app.email }}</span>
+                        <span class="tag-pill">📞 {{ app.phone }}</span>
+                        <span class="tag-pill">📅 Applied: {{ app.applied_at|date:"d M Y" }}</span>
+                        <span class="tag-pill tag-skills">⚡ Skills: {{ app.skills }}</span>
+                    </div>
+
+                    {% if app.cover_letter %}
+                        <div style="background: var(--slate-100); padding: 12px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--slate-700); margin: 12px 0;">
+                            <strong>Candidate Statement:</strong> "{{ app.cover_letter }}"
+                        </div>
+                    {% endif %}
+
+                    {% if app.resume %}
+                        <div style="margin-bottom: 14px; font-size: 14px;">
+                            📄 <strong>Candidate Resume:</strong> 
+                            <a href="{{ app.resume.url }}" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Download / View File</a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Update Status Form -->
+                    <form method="POST" action="/apply/application/{{ app.id }}/status/" style="display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--slate-200); flex-wrap: wrap;">
+                        {% csrf_token %}
+                        <label style="font-size: 13px; font-weight: 700; color: var(--slate-700);">Change Candidate Status:</label>
+                        <select name="status" style="width: auto; padding: 6px 12px; font-size: 13px; border-radius: var(--radius-sm);">
+                            <option value="Pending" {% if app.status == "Pending" %}selected{% endif %}>Pending</option>
+                            <option value="Under Review" {% if app.status == "Under Review" %}selected{% endif %}>Under Review</option>
+                            <option value="Shortlisted" {% if app.status == "Shortlisted" %}selected{% endif %}>Shortlisted</option>
+                            <option value="Selected" {% if app.status == "Selected" %}selected{% endif %}>Selected</option>
+                            <option value="Offer Accepted" {% if app.status == "Offer Accepted" %}selected{% endif %}>Offer Accepted</option>
+                            <option value="Offer Declined" {% if app.status == "Offer Declined" %}selected{% endif %}>Offer Declined</option>
+                            <option value="Rejected" {% if app.status == "Rejected" %}selected{% endif %}>Rejected</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm">Update Status</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="job-card" style="text-align: center; padding: 36px 20px;">
+            <h3>No Applications Received Yet</h3>
+            <p style="color: var(--slate-500); margin-top: 8px;">Candidates who apply to your openings will appear here for review.</p>
+        </div>
+    {% endif %}
+{% endblock %}

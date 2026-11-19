@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} at {{ job.company }} - DevHire{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="/jobs/" style="color: var(--slate-600); text-decoration: none; font-size: 14px; font-weight: 600;">
+            &larr; Back to all jobs
+        </a>
+    </div>
+
+    <div class="job-card" style="padding: 36px;">
+        <div style="border-bottom: 1px solid var(--slate-200); padding-bottom: 24px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
+                <div>
+                    <h1 style="font-size: 28px; font-weight: 800; color: var(--slate-900); margin-bottom: 6px;">
+                        {{ job.title }}
+                    </h1>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--primary);">
+                        🏢 {{ job.company }}
+                    </div>
+                </div>
+
+                <div>
+                    {% if user.is_authenticated %}
+                        <a href="/apply/{{ job.id }}/" class="btn" style="padding: 12px 28px; font-size: 15px;">
+                            🚀 Apply Now
+                        </a>
+                    {% else %}
+                        <a href="/login/" class="btn" style="padding: 12px 28px; font-size: 15px;">
+                            Sign In to Apply &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="job-tags-row" style="margin-top: 20px;">
+                <span class="tag-pill">📍 Location: {{ job.location }}</span>
+                <span class="tag-pill tag-salary">💰 Compensation: {{ job.salary }}</span>
+                <span class="tag-pill">⏱️ Experience: {{ job.experience }}</span>
+                <span class="tag-pill tag-skills">⚡ Tech Stack: {{ job.skills }}</span>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: var(--slate-900); margin-bottom: 14px;">
+                Job Description & Requirements
+            </h2>
+            <div style="color: var(--slate-700); font-size: 15px; line-height: 1.8; white-space: pre-line;">
+                {{ job.description }}
+            </div>
+        </div>
+
+        <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+            <a href="/jobs/" class="btn btn-secondary btn-sm">&larr; Explore Other Roles</a>
+            {% if user.is_authenticated %}
+                <a href="/apply/{{ job.id }}/" class="btn">Apply For This Position &rarr;</a>
+            {% else %}
+                <a href="/login/" class="btn">Sign In to Apply &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

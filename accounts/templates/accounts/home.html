@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}DevHire - Connect With High-Growth Tech Teams{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-card">
+        <h1>Find Your Dream <span>Engineering Role</span></h1>
+        <p>DevHire connects ambitious developers and data engineers with innovative companies. Discover open opportunities, apply seamlessly, and track your applications in real-time.</p>
+
+        <form method="GET" action="/jobs/" class="search-form-wrap">
+            <div class="search-input-group">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search title, skills (e.g. Python, React, AWS)..."
+                >
+            </div>
+            <div class="search-input-group">
+                <input
+                    type="text"
+                    name="location"
+                    placeholder="Location (e.g. Bangalore, Remote, Chennai)..."
+                >
+            </div>
+            <button type="submit" class="btn">
+                🔍 Find Jobs
+            </button>
+        </form>
+    </section>
+
+    <!-- Featured Openings -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 class="section-title" style="margin-bottom: 0;">
+            🔥 Featured Tech Openings
+        </h2>
+        <a href="/jobs/" class="btn btn-secondary btn-sm">Browse All Jobs &rarr;</a>
+    </div>
+
+    {% if jobs %}
+        <div>
+            {% for job in jobs %}
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <h3 class="job-card-title">{{ job.title }}</h3>
+                            <div class="job-card-company">🏢 {{ job.company }}</div>
+                        </div>
+                        <a href="/jobs/details/{{ job.id }}/" class="btn btn-sm">
+                            View & Apply &rarr;
+                        </a>
+                    </div>
+
+                    <div class="job-tags-row">
+                        <span class="tag-pill">📍 {{ job.location }}</span>
+                        <span class="tag-pill tag-salary">💰 {{ job.salary }}</span>
+                        <span class="tag-pill">⏱️ {{ job.experience }}</span>
+                        <span class="tag-pill tag-skills">⚡ {{ job.skills }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="job-card" style="text-align: center; padding: 40px 20px;">
+            <h3>No jobs active at the moment</h3>
+            <p style="color: var(--slate-500); margin: 10px 0 20px;">Check back soon or post a new vacancy!</p>
+            {% if user.is_authenticated and user.recruiterprofile %}
+                <a href="/jobs/add/" class="btn">+ Post a Job</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

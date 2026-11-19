@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Application on File - DevHire{% endblock %}
+
+{% block content %}
+<div class="job-card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 48px 32px;">
+    <div style="font-size: 48px; margin-bottom: 12px;">📌</div>
+    <h2 style="font-size: 26px; font-weight: 800; color: var(--slate-900); margin-bottom: 8px;">
+        You Have Already Applied
+    </h2>
+    <p style="color: var(--slate-600); font-size: 15px; margin-bottom: 24px;">
+        You submitted an application for <strong>{{ job.title }}</strong> at <strong>{{ job.company }}</strong>.
+    </p>
+
+    <div style="background: var(--slate-100); padding: 18px; border-radius: var(--radius-md); display: inline-block; text-align: left; margin-bottom: 24px; min-width: 280px;">
+        <div style="font-size: 14px; color: var(--slate-600); margin-bottom: 6px;">
+            Application Reference: <strong>#{{ application.id }}</strong>
+        </div>
+        <div style="font-size: 14px; color: var(--slate-600);">
+            Current Status: 
+            {% if application.status == "Shortlisted" %}
+                <span class="status-badge status-Shortlisted">🟢 Shortlisted</span>
+            {% elif application.status == "Selected" %}
+                <span class="status-badge status-Selected">🎉 Selected</span>
+            {% elif application.status == "Rejected" %}
+                <span class="status-badge status-Rejected">🔴 Rejected</span>
+            {% elif application.status == "Under Review" %}
+                <span class="status-badge status-Under-Review">🔵 Under Review</span>
+            {% else %}
+                <span class="status-badge status-Pending">🟡 Pending</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+        <a href="/dashboard/" class="btn">View My Dashboard</a>
+        <a href="/jobs/" class="btn btn-secondary">Explore Other Jobs</a>
+    </div>
+</div>
+{% endblock %}

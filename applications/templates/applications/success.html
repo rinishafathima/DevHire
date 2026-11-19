@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Application Submitted - DevHire{% endblock %}
+
+{% block content %}
+<div class="job-card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 48px 32px;">
+    <div style="font-size: 52px; margin-bottom: 12px;">🎉</div>
+    <h2 style="font-size: 26px; font-weight: 800; color: var(--slate-900); margin-bottom: 8px;">
+        Application Submitted Successfully!
+    </h2>
+    <p style="color: var(--slate-600); font-size: 15px; margin-bottom: 24px;">
+        Thank you, <strong>{{ name }}</strong>. Your application for <strong>{{ job.title }}</strong> at <strong>{{ job.company }}</strong> has been received and forwarded to the hiring team.
+    </p>
+
+    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 20px; border-radius: var(--radius-md); font-size: 14px; margin-bottom: 28px;">
+        ✉️ You will receive notification updates via email as the recruiter reviews your application.
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+        <a href="/dashboard/" class="btn">Go to My Dashboard</a>
+        <a href="/jobs/" class="btn btn-secondary">Browse More Jobs</a>
+    </div>
+</div>
+{% endblock %}
